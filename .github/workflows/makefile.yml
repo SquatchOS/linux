@@ -1,0 +1,27 @@
+name: Makefile CI
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Configure system
+      run: apt install bc binutils bison dwarves flex gcc git gnupg2 gzip libelf-dev libncurses5-dev libssl-dev make openssl pahole perl-base rsync tar xz-utils
+
+    - name: Configure Linux
+      run: make defconfig && ./scripts/config --file .config --set-str LOCALVERSION "-squatchos"
+
+    - name: Build!!
+      run: make -j$(nproc) 2>&1 | tee log
+
+    - name: Upload to GitHub
+      run: git push
